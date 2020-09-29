@@ -1,8 +1,5 @@
 ﻿using AutoMapper;
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Tweetinvi;
 using Tweetinvi.Models;
 using TwitterBot.Framework.Contracts;
@@ -16,10 +13,10 @@ namespace TwitterBot.Framework.BusinessLogic
         private readonly string _consumerSecret;
         private readonly IMapper _mapper;
 
-        public TweetOperations(string consumerKey, string consumerSecret, IMapper mapper)
+        public TweetOperations(TwitterApiSettings twitterApiSettings, IMapper mapper)
         {
-            _consumerKey = consumerKey;
-            _consumerSecret = consumerSecret;
+            _consumerKey = twitterApiSettings.Key;
+            _consumerSecret = twitterApiSettings.Secret;
             _mapper = mapper;
         }
 

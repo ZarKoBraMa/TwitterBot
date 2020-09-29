@@ -3,13 +3,11 @@ using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
 using TwitterBot.AzureFunctions.Common;
 using TwitterBot.Framework.BusinessLogic;
 using TwitterBot.Framework.Contracts;
 using TwitterBot.Framework.Mappings;
+using TwitterBot.Framework.Types;
 
 [assembly: FunctionsStartup(typeof(TwitterBot.AzureFunctions.Startup))]
 
@@ -17,6 +15,8 @@ namespace TwitterBot.AzureFunctions
 {
     public class Startup : FunctionsStartup
     {
+        private IConfiguration _configuration;
+
         public override void Configure(IFunctionsHostBuilder builder)
         {
             // Add IConfiguration
@@ -25,25 +25,29 @@ namespace TwitterBot.AzureFunctions
 
             var actualRoot = localRoot ?? azureRoot;
 
-            var configBuilder = new ConfigurationBuilder()
+            var config = new ConfigurationBuilder()
                 .SetBasePath(actualRoot)
                 .AddJsonFile("local.settings.json", optional: true, reloadOnChange: true)
-                .AddEnvironmentVariables();
+                .AddEnvironmentVariables()
+                .Build();
 
-            IConfiguration configuration = configBuilder.Build();
-            builder.Services.AddSingleton(configuration);
+            builder.Services.AddSingleton(config);
+            _configuration = config;
 
-            // Add custom service
-            builder.Services.AddSingleton<ITweetOperations>(factory => 
+            var twitterApiSettings = new TwitterApiSettings
             {
-                var consumerApi = configuration[Constants.TWITTER_API_KEY];
-                var consumerSecret = configuration[Constants.TWITTER_API_SECRET];
+                Key = _configuration[Constants.TWITTER_API_KEY],
+                Secret = _configuration[Constants.TWITTER_API_SECRET]
+            };
+            builder.Services.AddSingleton(twitterApiSettings);
 
+            builder.Services.AddSingleton(factory =>
+            {
                 var mapperConfiguration = new MapperConfiguration(config => config.AddProfile<MappingProfile>());
-                var mapper = mapperConfiguration.CreateMapper();
-
-                return new TweetOperations(consumerApi, consumerSecret, mapper);
+                return mapperConfiguration.CreateMapper();
             });
+
+            builder.Services.AddSingleton<ITweetOperations, TweetOperations>();
         }
     }
 }
