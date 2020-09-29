@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using TwitterBot.AzureFunctions.Common;
+using TwitterBot.AzureFunctions.Configurations;
 using TwitterBot.Framework.BusinessLogic;
 using TwitterBot.Framework.Contracts;
 using TwitterBot.Framework.Mappings;
@@ -19,35 +20,27 @@ namespace TwitterBot.AzureFunctions
 
         public override void Configure(IFunctionsHostBuilder builder)
         {
-            // Add IConfiguration
+            _configuration = BuildConfiguration();
+
+            
+            builder.Services
+                .AddSingleton(_configuration)
+                .AddAutoMapper()
+                .AddTweetOperations(_configuration);
+        }
+
+        private IConfiguration BuildConfiguration()
+        {   
             var localRoot = Environment.GetEnvironmentVariable("AzureWebJobsScriptRoot");
             var azureRoot = $"{Environment.GetEnvironmentVariable("HOME")}/site/wwwroot";
 
             var actualRoot = localRoot ?? azureRoot;
 
-            var config = new ConfigurationBuilder()
+            return new ConfigurationBuilder()
                 .SetBasePath(actualRoot)
                 .AddJsonFile("local.settings.json", optional: true, reloadOnChange: true)
                 .AddEnvironmentVariables()
                 .Build();
-
-            builder.Services.AddSingleton(config);
-            _configuration = config;
-
-            var twitterApiSettings = new TwitterApiSettings
-            {
-                Key = _configuration[Constants.TWITTER_API_KEY],
-                Secret = _configuration[Constants.TWITTER_API_SECRET]
-            };
-            builder.Services.AddSingleton(twitterApiSettings);
-
-            builder.Services.AddSingleton(factory =>
-            {
-                var mapperConfiguration = new MapperConfiguration(config => config.AddProfile<MappingProfile>());
-                return mapperConfiguration.CreateMapper();
-            });
-
-            builder.Services.AddSingleton<ITweetOperations, TweetOperations>();
         }
     }
 }
