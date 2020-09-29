@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <AzureFunctionsVersion>v3</AzureFunctionsVersion>
+    <UserSecretsId>59d15349-4a78-4971-b198-d740e89df0ea</UserSecretsId>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Azure.Functions.Extensions" Version="1.1.0" />
+    <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.Storage" Version="3.0.10" />
+    <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="3.0.9" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\TwitterBot.Framework\TwitterBot.Framework.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="host.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="local.settings.json">
+      <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Configurations\" />
+  </ItemGroup>
+</Project>
