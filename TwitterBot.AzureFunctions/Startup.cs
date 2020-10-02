@@ -1,14 +1,8 @@
-﻿using AutoMapper;
-using Microsoft.Azure.Functions.Extensions.DependencyInjection;
+﻿using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using TwitterBot.AzureFunctions.Common;
 using TwitterBot.AzureFunctions.Configurations;
-using TwitterBot.Framework.BusinessLogic;
-using TwitterBot.Framework.Contracts;
-using TwitterBot.Framework.Mappings;
-using TwitterBot.Framework.Types;
 
 [assembly: FunctionsStartup(typeof(TwitterBot.AzureFunctions.Startup))]
 
@@ -21,12 +15,12 @@ namespace TwitterBot.AzureFunctions
         public override void Configure(IFunctionsHostBuilder builder)
         {
             _configuration = BuildConfiguration();
-
             
             builder.Services
                 .AddSingleton(_configuration)
                 .AddAutoMapper()
-                .AddTweetOperations(_configuration);
+                .AddTweetOperations(_configuration)
+                .AddCosmosDb(_configuration);
         }
 
         private IConfiguration BuildConfiguration()
