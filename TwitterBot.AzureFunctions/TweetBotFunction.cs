@@ -1,10 +1,14 @@
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using TwitterBot.Framework.Contracts;
 using TwitterBot.Framework.Contracts.Data;
+using TwitterBot.Framework.Contracts.ServiceBus;
 using TwitterBot.Framework.Types;
 
 namespace TwitterBot.AzureFunctions
@@ -12,42 +16,60 @@ namespace TwitterBot.AzureFunctions
     public class TweetBotFunction
     {
         private readonly ITweetOperations _tweetOperations;
+        private readonly IServiceBusOperations _serviceBusOperations;
         private readonly IDocumentDbRepository<Tweet> _tweetDbRepository;
+        private readonly IDocumentDbRepository<Hashtag> _hashtagDbRepository;
 
-        public TweetBotFunction(ITweetOperations tweetOperations, IDocumentDbRepository<Tweet> tweetDbRepository)
+        public TweetBotFunction(
+            ITweetOperations tweetOperations, 
+            IServiceBusOperations serviceBusOperations,
+            IDocumentDbRepository<Tweet> tweetDbRepository,
+            IDocumentDbRepository<Hashtag> hashtagDbRepository)
         {
             _tweetOperations = tweetOperations;
+            _serviceBusOperations = serviceBusOperations;
             _tweetDbRepository = tweetDbRepository;
+            _hashtagDbRepository = hashtagDbRepository;
         }
 
         [FunctionName("TweetBotFunction")]
         public async Task Run([TimerTrigger("0 */5 * * * *")]TimerInfo myTimer, ILogger log)
         {
-            var hashTag = new Hashtag { Text = "#justsaying"};
-            var tweet = _tweetOperations.GetPopularTweetByHashtag(hashTag);
+            var hashTagMessagess = await _serviceBusOperations.ReceiveMessagesAsync();
+            var hashTags = hashTagMessagess.Select(p => JsonConvert.DeserializeObject<Hashtag>(Encoding.UTF8.GetString(p.Body)));
 
-            if (tweet != null)
+            foreach (var hashTag in hashTags)
             {
-                tweet.Hashtags = new List<Hashtag>();
-                log.LogInformation($"Latest popular tweet for #justsaying : {tweet.FullText}");
+                var tweet = _tweetOperations.GetPopularTweetByHashtag(hashTag);
 
-                var existingTweet = await _tweetDbRepository.GetByIdAsync(tweet.Id);
-                if (existingTweet is null)
+                if (tweet != null)
                 {
-                    tweet.Hashtags.Add(hashTag);
-                    await _tweetDbRepository.AddOrUpdateAsync(tweet);
+                    tweet.Hashtags = new List<Hashtag>();
+                    log.LogInformation($"Latest popular tweet for {hashTag.Text} : {tweet.FullText}");
 
-                    log.LogInformation($"Added Tweet in TweetCollection with Id: { tweet.Id }");
+                    var existingTweet = await _tweetDbRepository.GetByIdAsync(tweet.Id);
+                    if (existingTweet is null)
+                    {
+                        tweet.Hashtags.Add(hashTag);
+                        await _tweetDbRepository.AddOrUpdateAsync(tweet);
+
+                        log.LogInformation($"Added Tweet in TweetCollection with Id: { tweet.Id }");
+                    }
+
+                    if (existingTweet != null && !existingTweet.Hashtags.Any(p => p.Text == hashTag.Text))
+                    {
+                        tweet.Hashtags = existingTweet.Hashtags;
+                        tweet.Hashtags.Add(hashTag);
+
+                        await _tweetDbRepository.AddOrUpdateAsync(tweet);
+                        log.LogInformation($"Updated Tweet in TweetCollection with Id: { tweet.Id }");
+                    }
                 }
 
-                if (existingTweet != null && !existingTweet.Hashtags.Any(p => p.Text == hashTag.Text))
-                {
-                    tweet.Hashtags = existingTweet.Hashtags;
-                    tweet.Hashtags.Add(hashTag);
+                hashTag.IsCurrentlyInQueue = false;
+                hashTag.LastSyncedDateTime = DateTime.UtcNow;
 
-                    await _tweetDbRepository.AddOrUpdateAsync(tweet);
-                    log.LogInformation($"Updated Tweet in TweetCollection with Id: { tweet.Id }");
-                }
+                await _hashtagDbRepository.AddOrUpdateAsync(hashTag);
             }
         }
     }

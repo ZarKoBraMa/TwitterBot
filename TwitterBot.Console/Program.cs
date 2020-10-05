@@ -1,10 +1,16 @@
 ﻿using AutoMapper;
+using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Resources;
+using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using TwitterBot.Framework.BusinessLogic;
 using TwitterBot.Framework.CosmosDB;
 using TwitterBot.Framework.Mappings;
+using TwitterBot.Framework.ServiceBus;
 using TwitterBot.Framework.Types;
 
 namespace TwitterBot.ConsoleApp
@@ -20,71 +26,54 @@ namespace TwitterBot.ConsoleApp
 
         private static async Task InternalHandler()
         {
-            var context = new DocumentDbContext()
+            var serviceBusContext = new ServiceBusContext()
             {
-                AuthKey = "C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==",
-                DatabaseId = "TestDB",
-                EndpointUri = "https://localhost:8081"
+                ConnectionString = "Endpoint=sb://zarkoba.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=xfjIl3a0GTGZ5SYBbi3Tptu8PKeMkZiSL5O5vIrchis=",
+                QueueName = "HashTagQueue",
+                MaxConcurrentMessagesToBeRetrieved = 2,
+                SessionId = "TwitterBotApplication",
+                OperationTimeout = TimeSpan.FromMilliseconds(500)
             };
 
-            await context.CreateDatabaseAndCollectionsAsync();
-            var documentRepo = new DocumentDbRepository<Tweet>(context);
-
-            var id1 = Guid.NewGuid().ToString();
-            var id2 = Guid.NewGuid().ToString();
-
-            // Create Tweets
-            var Tweet1 = await documentRepo.AddOrUpdateAsync(new Tweet
+            var serviceBusOperations = new ServiceBusOperations(serviceBusContext);
+            
+            // Create Hashtags
+            List<Hashtag> hashtags = new List<Hashtag>();
+            for (int i = 1; i <= 10; i++)
             {
-                Id = id1,
-                FullText = "This is Test!!!"
-            });
-            Console.WriteLine("===== Create =====");
-            Console.WriteLine(Tweet1.FullText);
-            Console.WriteLine("==================");
-            var Tweet2 = await documentRepo.AddOrUpdateAsync(new Tweet
-            {
-                Id = id2,
-                FullText = "This is second test!!!"
-            });
-            Console.WriteLine("===== Create =====");
-            Console.WriteLine(Tweet2.FullText);
-            Console.WriteLine("==================");
-
-            // Update Tweet
-            Tweet2 = await documentRepo.AddOrUpdateAsync(new Tweet
-            {
-                Id = id2,
-                FullText = "This is 2nd test!!!"
-            });
-            Console.WriteLine("===== Update =====");
-            Console.WriteLine(Tweet2.FullText);
-            Console.WriteLine("==================");
-
-            // Get By Id Tweet
-            Tweet2 = await documentRepo.GetByIdAsync(id2);
-            Console.WriteLine("===== GetByIdAsync =====");
-            Console.WriteLine(Tweet2.FullText);
-            Console.WriteLine("==================");
-
-            // Where
-            var tweets = await documentRepo.WhereAsync(p => p.FullText.Contains("e"));
-            Console.WriteLine("===== Where =====");
-            foreach (var Tweet in tweets)
-            {
-                Console.WriteLine(Tweet.FullText);
+                hashtags.Add(new Hashtag
+                {
+                    Id = $"{i}",
+                    Text = $"#justsaying{i}",
+                    IsCurrentlyInQueue = true
+                });
             }
-            Console.WriteLine("==================");
 
-            // Top
-            var topTweets = await documentRepo.TopAsync(p => p.FullText.
-            Contains("e"), 1);
-            Console.WriteLine("===== Top =====");
-            foreach (var Tweet in topTweets)
+            // Send messages.
+            foreach (var hashtag in hashtags)
             {
-                Console.WriteLine(Tweet.FullText);
+                await serviceBusOperations.SendMessageAsync(hashtag.Id, JsonConvert.SerializeObject(hashtag));
             }
-            Console.WriteLine("==================");
+
+            // Receive all Session based messages.
+            while (true)
+            {
+                Thread.Sleep(TimeSpan.FromSeconds(3));
+                var messages = await serviceBusOperations.ReceiveMessagesAsync();
+                if (messages != null && messages.Any())
+                {
+                    foreach (var message in messages)
+                    {
+                        var messageText = Encoding.UTF8.GetString(message.Body);
+                        var hashTag = JsonConvert.DeserializeObject<Hashtag>(messageText);
+                        Console.WriteLine(hashTag.Text);
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("No messages received!!!");
+                }
+            }
         }
     }
 }

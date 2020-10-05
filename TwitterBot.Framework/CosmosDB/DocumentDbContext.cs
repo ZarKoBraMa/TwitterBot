@@ -77,7 +77,8 @@ namespace TwitterBot.Framework.CosmosDB
         {
             var entityCollection = new List<IDocumentDbEntity>()
             {
-                new DocumentDbEntity { EntityType = typeof(Tweet), Name = "TweetCollection" }
+                new DocumentDbEntity { EntityType = typeof(Tweet), Name = "TweetCollection" },
+                new DocumentDbEntity { EntityType = typeof(Hashtag), Name ="HashtagCollection" }
             };
             return entityCollection;
         }

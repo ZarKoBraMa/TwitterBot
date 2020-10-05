@@ -15,12 +15,13 @@ namespace TwitterBot.AzureFunctions
         public override void Configure(IFunctionsHostBuilder builder)
         {
             _configuration = BuildConfiguration();
-            
+
             builder.Services
                 .AddSingleton(_configuration)
                 .AddAutoMapper()
                 .AddTweetOperations(_configuration)
-                .AddCosmosDb(_configuration);
+                .AddCosmosDb(_configuration)
+                .AddServiceBus(_configuration);
         }
 
         private IConfiguration BuildConfiguration()
