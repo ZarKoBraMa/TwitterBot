@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using TwitterBot.Framework.Contracts;
 using TwitterBot.Framework.Contracts.Data;
 using TwitterBot.Framework.Contracts.ServiceBus;
+using TwitterBot.Framework.Exceptions;
 using TwitterBot.Framework.Types;
 
 namespace TwitterBot.AzureFunctions
@@ -37,39 +38,53 @@ namespace TwitterBot.AzureFunctions
         {
             var hashTagMessagess = await _serviceBusOperations.ReceiveMessagesAsync();
             var hashTags = hashTagMessagess.Select(p => JsonConvert.DeserializeObject<Hashtag>(Encoding.UTF8.GetString(p.Body)));
+            var erroredHashtags = new List<Hashtag>();
 
             foreach (var hashTag in hashTags)
             {
-                var tweet = _tweetOperations.GetPopularTweetByHashtag(hashTag);
-
-                if (tweet != null)
+                try
                 {
-                    tweet.Hashtags = new List<Hashtag>();
-                    log.LogInformation($"Latest popular tweet for {hashTag.Text} : {tweet.FullText}");
+                    var tweet = _tweetOperations.GetPopularTweetByHashtag(hashTag);
 
-                    var existingTweet = await _tweetDbRepository.GetByIdAsync(tweet.Id);
-                    if (existingTweet is null)
+                    if (tweet != null)
                     {
-                        tweet.Hashtags.Add(hashTag);
-                        await _tweetDbRepository.AddOrUpdateAsync(tweet);
+                        tweet.Hashtags = new List<Hashtag>();
+                        log.LogInformation($"Latest popular tweet for {hashTag.Text} : {tweet.FullText}");
 
-                        log.LogInformation($"Added Tweet in TweetCollection with Id: { tweet.Id }");
+                        var existingTweet = await _tweetDbRepository.GetByIdAsync(tweet.Id);
+                        if (existingTweet is null)
+                        {
+                            tweet.Hashtags.Add(hashTag);
+                            await _tweetDbRepository.AddOrUpdateAsync(tweet);
+
+                            log.LogInformation($"Added Tweet in TweetCollection with Id: { tweet.Id }");
+                        }
+
+                        if (existingTweet != null && !existingTweet.Hashtags.Any(p => p.Text == hashTag.Text))
+                        {
+                            tweet.Hashtags = existingTweet.Hashtags;
+                            tweet.Hashtags.Add(hashTag);
+
+                            await _tweetDbRepository.AddOrUpdateAsync(tweet);
+                            log.LogInformation($"Updated Tweet in TweetCollection with Id: { tweet.Id }");
+                        }
                     }
 
-                    if (existingTweet != null && !existingTweet.Hashtags.Any(p => p.Text == hashTag.Text))
-                    {
-                        tweet.Hashtags = existingTweet.Hashtags;
-                        tweet.Hashtags.Add(hashTag);
+                    hashTag.IsCurrentlyInQueue = false;
+                    hashTag.LastSyncedDateTime = DateTime.UtcNow;
 
-                        await _tweetDbRepository.AddOrUpdateAsync(tweet);
-                        log.LogInformation($"Updated Tweet in TweetCollection with Id: { tweet.Id }");
-                    }
+                    await _hashtagDbRepository.AddOrUpdateAsync(hashTag);
                 }
+                catch (Exception ex)
+                {
+                    log.LogError(ex, ex.Message);
+                    erroredHashtags.Add(hashTag);
+                }
+            }
 
-                hashTag.IsCurrentlyInQueue = false;
-                hashTag.LastSyncedDateTime = DateTime.UtcNow;
-
-                await _hashtagDbRepository.AddOrUpdateAsync(hashTag);
+            if (erroredHashtags.Any())
+            {
+                throw new TwitterBotBusinessException(erroredHashtags);
             }
         }
     }
