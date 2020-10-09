@@ -11,7 +11,7 @@ namespace TwitterBot.AzureFunctions
         public static void Run([CosmosDBTrigger(
             databaseName: "TwitterBotDB",
             collectionName: "TweetCollection",
-            ConnectionStringSetting = "TwitterBotDB_ConnectionString",
+            ConnectionStringSetting = "CosmosDB:ConnectionString",
             LeaseCollectionName = "leases",
             CreateLeaseCollectionIfNotExists = true)]IReadOnlyList<Document> input, ILogger log)
         {

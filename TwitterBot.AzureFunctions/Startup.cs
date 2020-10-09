@@ -34,6 +34,7 @@ namespace TwitterBot.AzureFunctions
             return new ConfigurationBuilder()
                 .SetBasePath(actualRoot)
                 .AddJsonFile("local.settings.json", optional: true, reloadOnChange: true)
+                .AddUserSecrets<Startup>()
                 .AddEnvironmentVariables()
                 .Build();
         }
