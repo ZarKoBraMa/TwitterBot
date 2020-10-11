@@ -1,0 +1,49 @@
+﻿@using TwitterBot.Web.Identity
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+@if (SignInManager.IsSignedIn(User))
+{
+    <form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Page("/Index", new { area = "" })" method="post" id="logoutForm"
+          class="navbar-right">
+        <ul class="right hide-on-med-and-down">
+            <li>
+                <a href="#">Hello @UserManager.GetUserName(User)!</a>
+            </li>
+            <li>
+                <button type="submit" class="waves-effect waves-light btn orange">
+                    Log out
+                </button>
+            </li>
+        </ul>
+        <ul id="nav-mobile" class="sidenav">
+            <li>
+                <a href="#">Hello @UserManager.GetUserName(User)!</a>
+            </li>
+            <li>
+                <button type="submit" class="waves-effect waves-light btn orange">
+                    Log out
+                </button>
+            </li>
+        </ul>
+        <a href="#" data-target="nav-mobile" class="sidenav-trigger">
+            <i class="material-icons">menu</i>
+        </a>
+    </form>
+}
+else
+{
+    <ul class="right hide-on-med-and-down">
+        <li>
+            <a class="waves-effect waves-light btn modal-trigger orange twitterLogin" href="#">Twitter Login</a>
+        </li>
+    </ul>
+    <ul id="nav-mobile" class="sidenav">
+        <li>
+            <a class="waves-effect waves-light btn modal-trigger orange twitterLogin" href="#">Twitter Login</a>
+        </li>
+    </ul>
+    <a href="#" data-target="nav-mobile" class="sidenav-trigger">
+        <i class="material-icons">menu</i>
+    </a>
+}

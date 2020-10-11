@@ -1,0 +1,94 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1,maximum-scale=1.0" />
+    <title>Twitter Bot Application</title>
+    <environment include="Development">
+        <link rel="stylesheet" href="~/css/materialize.css" />
+    </environment>
+    <environment exclude="Development">
+        <link rel="stylesheet" href="~/css/materialize.min.css" />
+    </environment>
+    <link rel="stylesheet" href="~/css/site.css" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <nav class="light-blue lighten-1" role="navigation">
+            <div class="nav-wrapper container">
+                <a id="logo-container" href="/" class="brand-logo">Twitter Bot</a>
+                @await Html.PartialAsync("_LoginPartial")
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        @RenderBody()
+    </main>
+
+
+    <footer class="page-footer orange">
+        <div class="container">
+            <div class="row">
+                <div class="col l6 s12">
+                    <h5 class="white-text">About Us</h5>
+                    <p class="grey-text text-lighten-4">
+                        Twitter Bot Application let's you to fine tune the
+                        information you are looking for at Twitter platform.
+                        It provides a keyword subscription model, where
+                        you specify your interests and we deliver you the
+                        latest updates based on your subscriptions.
+                    </p>
+                </div>
+                <div class="col l3 s12">
+                    <h5 class="white-text">Settings</h5>
+                    <ul>
+                        <li><a class="white-text" href="#!">Sign Up</a></li>
+                        <li><a class="white-text" href="#!">Sign In</a></li>
+                        <li>
+                            <a class="white-text" href="#!">
+                                Forgot
+                                Password
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="col l3 s12">
+                    <h5 class="white-text">Connect</h5>
+                    <ul>
+                        <li><a class="white-text" href="#!">Twitter</a></li>
+                        <li><a class="white-text" href="#!">Facebook</a></li>
+                        <li><a class="white-text" href="#!">LinkedIn</a></li>
+                        <li><a class="white-text" href="#!">Blog</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="footer-copyright">
+            <div class="container">
+                Powered by <a class="orange-text text-lighten-3"
+                              href="http://materializecss.com">Materialize</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Login with Twitter -->
+    <form asp-area="Identity" asp-page="/Account/ExternalLogin" class="form-horizontal loginForm" asp-route-returnUrl="/tweet/index" method="post">
+        <input type="hidden" name="provider" value="Twitter" />
+    </form>
+
+    <!-- Scripts-->
+    <environment exclude="Development">
+        <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+        <script src="~/js/materialize.min.js"></script>
+    </environment>
+    <environment include="Development">
+        <script src="~/lib/jquery/dist/jquery.js"></script>
+        <script src="~/js/materialize.js"></script>
+    </environment>
+    <script src="~/js/site.js"></script>
+    @RenderSection("Scripts", required: false)
+</body>
+</html>

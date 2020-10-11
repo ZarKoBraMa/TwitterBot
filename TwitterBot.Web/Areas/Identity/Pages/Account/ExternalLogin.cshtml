@@ -1,0 +1,44 @@
+﻿@page
+@model ExternalLoginModel
+@{
+    ViewData["Title"] = "Register";
+}
+
+<div class="row">
+    <div class="col s3"></div>
+    <div class="col s6">
+        <div class="card blue-grey darken-1">
+            <div class="card-content white-text">
+                <span class="card-title">Email Registration</span>
+                <p>
+                    You've successfully authenticated with <strong>@Model.ProviderDisplayName</strong>.
+                Please enter an email address for this site below and
+                click the Register button to finish logging in.
+            </p>
+        </div>
+        <div class="card-action white">
+            <div class="row">
+                <form asp-page-handler="Confirmation" asp-route-returnUrl="@Model.ReturnUrl" method="post">
+                    <div class="input-field col s10">
+                        <input placeholder="Enter Email" id="email"
+                               type="text" name="Input.Email" class="validate">
+                        <label for="email">Email</label>
+                        <span asp-validation-for="Input.Email"
+                              class="text-danger"></span>
+                    </div>
+                    <div class="input-field col s2">
+                        <button type="submit" class="btn btn-default">
+                            Register
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="col s3"></div>
+</div>
+
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+}
