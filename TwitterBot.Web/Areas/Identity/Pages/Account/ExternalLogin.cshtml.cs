@@ -1,17 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
+﻿using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
-using System.Text;
-using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using TwitterBot.Web.Identity;
 
@@ -130,13 +123,6 @@ namespace TwitterBot.Web.Areas.Identity.Pages.Account
                         _logger.LogInformation("User created an account using {Name} provider.", info.LoginProvider);
 
                         var userId = await _userManager.GetUserIdAsync(user);
-                        //var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                        //code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
-                        //var callbackUrl = Url.Page(
-                        //    "/Account/ConfirmEmail",
-                        //    pageHandler: null,
-                        //    values: new { area = "Identity", userId = userId, code = code },
-                        //    protocol: Request.Scheme);
 
                         // If account confirmation is required, we need to show the link if we don't have a real email sender
                         if (_userManager.Options.SignIn.RequireConfirmedAccount)
