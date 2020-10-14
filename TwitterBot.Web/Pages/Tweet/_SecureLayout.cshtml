@@ -48,6 +48,7 @@
                 $.post("@serviceSettings.Value.ServiceSettings.BaseUrl/api/SaveUserPreferences", JSON.stringify(user), function (data) {
                     var modal = M.Modal.getInstance($('.modal'));
                     modal.close();
+                    $.getTweets();
                 });
             });
 

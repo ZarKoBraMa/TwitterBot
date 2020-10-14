@@ -1,8 +1,88 @@
 ﻿@page
+@inject Microsoft.Extensions.Options.IOptions<TwitterBot.Web.Configurations.ServiceSettingsConfiguration> serviceSettings
 @model TwitterBot.Web.Pages.Tweet.IndexModel
 @{
     ViewData["Title"] = "Index";
     Layout = "~/Pages/Tweet/_SecureLayout.cshtml";
 }
 
-<h2>Index</h2>
+<div class="row">
+    @* No Tweets display Section - Display no tweets message. *@
+    <div class="col s3"></div>
+    <div class="col s6">
+        <div class="card-panel teal lighten-2 hide">
+            There are no tweets
+            available for your subscription!!!
+        </div>
+    </div>
+    <div class="col s3"></div>
+</div>
+@* Loader Section - Display loader. *@
+<div class="row center loader">
+    <div class="preloader-wrapper small active">
+        <div class="spinner-layer spinner-green-only">
+            <div class="circle-clipper left">
+                <div class="circle"></div>
+            </div><div class="gap-patch">
+                <div class="circle"></div>
+            </div><div class="circle-clipper right">
+                <div class="circle"></div>
+            </div>
+        </div>
+    </div>
+</div>
+@* Tweets display Section - Display tweets. *@
+<div class="row">
+    <div class="col s2"></div>
+    <div class="col s8 dataDiv"></div>
+    <div class="col s2"></div>
+</div>
+
+@section Scripts{
+    <script>
+$(function () {
+// Get Tweets for User.
+    jQuery.getTweets = function getTweets() {
+        $.get("@serviceSettings.Value.ServiceSettings.BaseUrl/api/GetLatestTweets?uid=" + $('#uid').val(), function (data) {
+            $('.loader').hide();
+            $('.dataDiv').html('');
+            $('.card-panel').addClass('hide');
+            if (data === null || data.length === 0) {
+                $('.card-panel').removeClass('hide');
+                return;
+            }
+            $.each(data, function (index, tweet) {
+                processTweet(tweet, false);
+            });
+        });
+    };
+// Update UI with tweet information.
+function processTweet(tweet, isNotification) {
+var displayColor = isNotification ? 'teal lighten-1' : 'blue-grey darken-1';
+var tweetDate = new Date(tweet.tco);
+    var tweetHtml = '<div class="col s12" id="' + tweet.id + '">\<div class="z-depth-3">\
+        <div class="card ' + displayColor + ' ">\
+            <div class="card-content white-text">\
+                <span class="card-title">' + tweet.tcb + '</span>\
+                <span>' + tweetDate + '</span>\
+                <p>' + tweet.ftxt + '\</p>\</div>\
+                <div class="card-action">\
+                    <a href="#">' + tweet.fcnt + ' Favorites</a>\
+                    <a href="#">' + tweet.rcnt + ' Retweets</a>\
+                    <a href="' + tweet.turl + '" target="_blank">\
+                        <i class="font-sizepoint9remmaterial-icons">launch</i> Twitter\
+                    </a >\
+                </div >\
+            </div >\
+        </div > ';
+
+        if (isNotification) {
+            $('.dataDiv').prepend(tweetHtml);
+        } else {
+            $('.dataDiv').append(tweetHtml);
+        }
+    }
+    $.getTweets();
+});
+</script>
+}

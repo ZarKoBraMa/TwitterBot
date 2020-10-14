@@ -15,3 +15,7 @@ body {
 main {
     flex: 1 0 auto;
 }
+
+.font-size-point9rem {
+    font-size: 0.9rem !important;
+}

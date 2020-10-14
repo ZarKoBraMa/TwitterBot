@@ -70,5 +70,16 @@ namespace TwitterBot.Framework.CosmosDB
                     UriFactory.CreateDocumentCollectionUri(_context.DatabaseId, _documentCollection.Id))
                 .Where(predicate));
         }
+
+        public IEnumerable<T> GetTweetsByHashtags(string[] hashtags, DateTime notBeforeDate)
+        {
+            var userHashtagString = string.Join(", ", hashtags.Select(t => "'" + t + "'"));
+            var query = _context.DocumentClient.CreateDocumentQuery<T>(
+                UriFactory.CreateDocumentCollectionUri(_context.DatabaseId, _documentCollection.Id),
+                string.Format("SELECT Tweets.id, Tweets.txt, Tweets.ftxt, Tweets.turl, Tweets.rcnt, Tweets.fcnt, Tweets.tcb, Tweets.tcbu, Tweets.tco" +
+                    " FROM Tweets JOIN Hashtag in Tweets.hts WHERE Hashtag.txt in ({0}) AND Tweets.tco >= '{1}'", userHashtagString, notBeforeDate.ToString("s")));
+            
+            return query.ToList();
+        }
     }
 }
