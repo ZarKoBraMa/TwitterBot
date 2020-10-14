@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using TwitterBot.Framework.Contracts.Data;
 using TwitterBot.Framework.Types;
+using User = TwitterBot.Framework.Types.User;
 
 namespace TwitterBot.Framework.CosmosDB
 {
@@ -78,7 +79,8 @@ namespace TwitterBot.Framework.CosmosDB
             var entityCollection = new List<IDocumentDbEntity>()
             {
                 new DocumentDbEntity { EntityType = typeof(Tweet), Name = "TweetCollection" },
-                new DocumentDbEntity { EntityType = typeof(Hashtag), Name ="HashtagCollection" }
+                new DocumentDbEntity { EntityType = typeof(Hashtag), Name ="HashtagCollection" },
+                new DocumentDbEntity { EntityType = typeof(User), Name = "UserCollection" }
             };
             return entityCollection;
         }

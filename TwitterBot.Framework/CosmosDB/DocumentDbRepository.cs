@@ -56,11 +56,11 @@ namespace TwitterBot.Framework.CosmosDB
 
         public async Task<IQueryable<T>> TopAsync(Expression<Func<T, bool>> predicate, int n)
         {
-            return await Task.Run(() => 
+            return await Task.Run(() =>
                 _context.DocumentClient.CreateDocumentQuery<T>(
                     UriFactory.CreateDocumentCollectionUri(_context.DatabaseId, _documentCollection.Id))
-                .Where(predicate)
-                .Take(n));
+                .Where(predicate));
+                //.Take(n));
         }
 
         public async Task<IQueryable<T>> WhereAsync(Expression<Func<T, bool>> predicate)

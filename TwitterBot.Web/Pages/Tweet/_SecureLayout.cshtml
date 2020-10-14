@@ -1,4 +1,6 @@
-﻿@{
+﻿@inject Microsoft.Extensions.Options.IOptions<TwitterBot.Web.Configurations.ServiceSettingsConfiguration> serviceSettings
+
+@{
     Layout = "~/Pages/Shared/_Layout.cshtml";
 }
 
@@ -26,8 +28,43 @@
 @section Scripts{
     <script>
         $(function () {
-            $('.modal').modal();
-            $('.chips').chips();
+            // Modal Configuration
+            $('.modal').modal({
+                onOpenEnd: function () {
+                    refreshModal();
+                }
+            });
+
+            // Save Button click event
+            $('#btnSave').click(function () {
+                instance = M.Chips.getInstance($('.chips'));
+                var user = {};
+                user.uid = $('#uid').val();
+                user.hts = [];
+                $.each(instance.chipsData, function (index, chip) {
+                    user.hts.push({ 'txt': chip.tag });
+                });
+
+                $.post("@serviceSettings.Value.ServiceSettings.BaseUrl/api/SaveUserPreferences", JSON.stringify(user), function (data) {
+                    var modal = M.Modal.getInstance($('.modal'));
+                    modal.close();
+                });
+            });
+
+            // Refresh the modal with latest information.
+            var refreshModal = function () {
+                // Initialize chips.
+                $('.chips').chips();
+                instance = M.Chips.getInstance($('.chips'));
+                $.get("@serviceSettings.Value.ServiceSettings.BaseUrl/api/RetrieveUserPreferences?uid=" + $('#uid').val(), function (data) {
+                    if (data === null) {
+                        return;
+                    }
+                    $.each(data.hts, function (index, chip) {
+                        instance.addChip({ tag: chip.txt });
+                    });
+                });
+            };
         });
     </script>
     @RenderSection("Scripts", required: false)
