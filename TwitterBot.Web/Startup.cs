@@ -65,6 +65,7 @@ namespace TwitterBot.Web
             }
 
             app.UseHttpsRedirection();
+            app.UseDefaultFiles();
             app.UseStaticFiles();
 
             app.UseRouting();
