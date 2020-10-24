@@ -16,5 +16,6 @@ namespace TwitterBot.Framework.Contracts.Data
         Task<IQueryable<T>> WhereAsync(Expression<Func<T, bool>> predicate);
         Task<IQueryable<T>> TopAsync(Expression<Func<T, bool>> predicate, int n);
         IEnumerable<T> GetTweetsByHashtags(string[] hashtags, DateTime notBeforeDate);
+        IEnumerable<T> GetUsersByHashtags(string[] hashtags);
     }
 }

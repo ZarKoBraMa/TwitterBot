@@ -40,7 +40,28 @@
 
 @section Scripts{
     <script>
+        $(function () {
+            var signalRInfo = function () {
+                $.get("@serviceSettings.Value.ServiceSettings.BaseUrl/api/SignalRConnection", function (data) {
+                    const connection = new signalR.HubConnectionBuilder()
+                        .withUrl(data.url, {
+                            accessTokenFactory: () => data.accessToken
+                        })
+                        .build();
+                    connection.start().catch(err => console.error(err.toString()));
+                    connection.on("updateTweets", (tweet) => {
+                        $('.card-panel').addClass('hide');
+                        var existingTweet = $('#' + tweet.id);
+                        if (existingTweet.length > 0) {
+                            $('#' + tweet.id).remove();
+                        }
+                        processTweet(tweet, true);
+                    });
+                });
+            };
+        signalRInfo();
 $(function () {
+
 // Get Tweets for User.
     jQuery.getTweets = function getTweets() {
         $.get("@serviceSettings.Value.ServiceSettings.BaseUrl/api/GetLatestTweets?uid=" + $('#uid').val(), function (data) {
@@ -84,5 +105,5 @@ var tweetDate = new Date(tweet.tco);
     }
     $.getTweets();
 });
-</script>
+    </script>
 }

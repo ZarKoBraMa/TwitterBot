@@ -83,10 +83,12 @@
     <environment exclude="Development">
         <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
         <script src="~/js/materialize.min.js"></script>
+        <script src="~/lib/@@aspnet/signalr/dist/browser/signalr.min.js"></script>
     </environment>
     <environment include="Development">
         <script src="~/lib/jquery/dist/jquery.js"></script>
         <script src="~/js/materialize.js"></script>
+        <script src="~/lib/@@aspnet/signalr/dist/browser/signalr.js"></script>
     </environment>
     <script src="~/js/site.js"></script>
     @RenderSection("Scripts", required: false)

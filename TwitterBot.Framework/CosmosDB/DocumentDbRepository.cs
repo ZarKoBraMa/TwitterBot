@@ -81,5 +81,18 @@ namespace TwitterBot.Framework.CosmosDB
             
             return query.ToList();
         }
+
+        public IEnumerable<T> GetUsersByHashtags(string[] hashtags)
+        {
+            var userHashtagString = string.Join(", ", hashtags.Select(t => "'" + t + "'"));
+
+            var query = _context.DocumentClient.CreateDocumentQuery<T>(
+                UriFactory.CreateDocumentCollectionUri(_context.DatabaseId, _documentCollection.Id),
+                string.Format("SELECT Users.uid" +
+                                "FROM Users JOIN Hashtag in Users.hts " +
+                                "WHERE Hashtag.txt in({0})", userHashtagString));
+
+            return query.ToList();
+        }
     }
 }

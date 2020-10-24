@@ -28,6 +28,9 @@
 @section Scripts{
     <script>
         $(function () {
+            $.ajaxSetup({
+                headers: { 'x-userid': $('#uid').val() }
+            });
             // Modal Configuration
             $('.modal').modal({
                 onOpenEnd: function () {
