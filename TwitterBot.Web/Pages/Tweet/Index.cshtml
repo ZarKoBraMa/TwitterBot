@@ -40,8 +40,9 @@
 
 @section Scripts{
     <script>
-        $(function () {
-            var signalRInfo = function () {
+
+$(function () {
+    var signalRInfo = function () {
                 $.get("@serviceSettings.Value.ServiceSettings.BaseUrl/api/SignalRConnection", function (data) {
                     const connection = new signalR.HubConnectionBuilder()
                         .withUrl(data.url, {
@@ -60,8 +61,6 @@
                 });
             };
         signalRInfo();
-$(function () {
-
 // Get Tweets for User.
     jQuery.getTweets = function getTweets() {
         $.get("@serviceSettings.Value.ServiceSettings.BaseUrl/api/GetLatestTweets?uid=" + $('#uid').val(), function (data) {

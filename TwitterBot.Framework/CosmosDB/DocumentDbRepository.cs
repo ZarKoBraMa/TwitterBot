@@ -88,7 +88,7 @@ namespace TwitterBot.Framework.CosmosDB
 
             var query = _context.DocumentClient.CreateDocumentQuery<T>(
                 UriFactory.CreateDocumentCollectionUri(_context.DatabaseId, _documentCollection.Id),
-                string.Format("SELECT Users.uid" +
+                string.Format("SELECT Users.uid " +
                                 "FROM Users JOIN Hashtag in Users.hts " +
                                 "WHERE Hashtag.txt in({0})", userHashtagString));
 
