@@ -5,7 +5,7 @@ using TwitterBot.AzureFunctions.Common;
 using TwitterBot.Framework.Contracts.ServiceBus;
 using TwitterBot.Framework.ServiceBus;
 
-namespace TwitterBot.AzureFunctions.Configurations
+namespace TwitterBot.AzureFunctions.Extensions
 {
     public static class ServiceBusDiExtension
     {

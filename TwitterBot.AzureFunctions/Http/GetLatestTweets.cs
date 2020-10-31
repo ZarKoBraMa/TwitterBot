@@ -1,15 +1,15 @@
 using System;
-using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using TwitterBot.Framework.Contracts.Data;
 using TwitterBot.Framework.Types;
 using System.Linq;
+using TwitterBot.AzureFunctions.Configurations;
+using Microsoft.Extensions.Options;
 
 namespace TwitterBot.AzureFunctions.Http
 {
@@ -17,11 +17,16 @@ namespace TwitterBot.AzureFunctions.Http
     {
         private readonly IDocumentDbRepository<User> _userRepository;
         private readonly IDocumentDbRepository<Tweet> _tweetRepository;
+        private readonly IOptions<AppSettingsConfiguration> _configurations;
 
-        public GetLatestTweets(IDocumentDbRepository<User> userRepository, IDocumentDbRepository<Tweet> tweetRepository)
+        public GetLatestTweets(
+            IDocumentDbRepository<User> userRepository, 
+            IDocumentDbRepository<Tweet> tweetRepository,
+            IOptions<AppSettingsConfiguration> configurations)
         {
             _userRepository = userRepository;
             _tweetRepository = tweetRepository;
+            _configurations = configurations;
         }
 
         [FunctionName("GetLatestTweets")]
@@ -46,7 +51,10 @@ namespace TwitterBot.AzureFunctions.Http
                 return new JsonResult(null);
             }
 
-            var tweets = _tweetRepository.GetTweetsByHashtags(user.Hashtags.Select(p => p.Text).ToArray(), DateTime.UtcNow.AddDays(-2));
+            var tweets = _tweetRepository.GetTweetsByHashtags(
+                user.Hashtags.Select(p => p.Text).ToArray(), 
+                DateTime.UtcNow.AddDays(_configurations.Value.AppSettings.TweetsFilterIntervalInDays));
+            
             if (tweets != null)
             {
                 tweets = tweets.OrderByDescending(p => p.TweetCreatedOn);

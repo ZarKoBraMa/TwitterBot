@@ -2,7 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using TwitterBot.Framework.Mappings;
 
-namespace TwitterBot.AzureFunctions.Configurations
+namespace TwitterBot.AzureFunctions.Extensions
 {
     public static class AutoMapperDiExtension
     {

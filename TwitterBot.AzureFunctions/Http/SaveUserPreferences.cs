@@ -11,6 +11,8 @@ using TwitterBot.Framework.Types;
 using System.Linq;
 using System.Collections.Generic;
 using System;
+using Microsoft.Extensions.Options;
+using TwitterBot.AzureFunctions.Configurations;
 
 namespace TwitterBot.AzureFunctions.Http
 {
@@ -18,11 +20,16 @@ namespace TwitterBot.AzureFunctions.Http
     {
         private readonly IDocumentDbRepository<User> _userRepository;
         private readonly IDocumentDbRepository<Hashtag> _hashTagRepository;
+        private readonly IOptions<AppSettingsConfiguration> _configurations;
 
-        public SaveUserPreferences(IDocumentDbRepository<User> userRepository, IDocumentDbRepository<Hashtag> hashTagRepository)
+        public SaveUserPreferences(
+            IDocumentDbRepository<User> userRepository, 
+            IDocumentDbRepository<Hashtag> hashTagRepository,
+            IOptions<AppSettingsConfiguration> configurations)
         {
             _userRepository = userRepository;
             _hashTagRepository = hashTagRepository;
+            _configurations = configurations;
         }
 
         [FunctionName("SaveUserPreferences")]
@@ -47,7 +54,7 @@ namespace TwitterBot.AzureFunctions.Http
                 }
 
                 hashtag.IsCurrentlyInQueue = false;
-                hashtag.LastSyncedDateTime = DateTime.UtcNow.AddMinutes(-10);
+                hashtag.LastSyncedDateTime = DateTime.UtcNow.AddMinutes(_configurations.Value.AppSettings.HashtagSyncIntervalInMinutes);
                 await _hashTagRepository.AddOrUpdateAsync(hashtag);
             }
 

@@ -1,16 +1,11 @@
-﻿using AutoMapper;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using TwitterBot.AzureFunctions.Common;
 using TwitterBot.Framework.BusinessLogic;
 using TwitterBot.Framework.Contracts;
-using TwitterBot.Framework.Mappings;
 using TwitterBot.Framework.Types;
 
-namespace TwitterBot.AzureFunctions.Configurations
+namespace TwitterBot.AzureFunctions.Extensions
 {
     public static class TweetOperationsDiExtension
     {

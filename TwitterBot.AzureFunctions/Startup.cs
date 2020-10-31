@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using TwitterBot.AzureFunctions.Configurations;
+using TwitterBot.AzureFunctions.Extensions;
 
 [assembly: FunctionsStartup(typeof(TwitterBot.AzureFunctions.Startup))]
 
@@ -17,7 +17,7 @@ namespace TwitterBot.AzureFunctions
             _configuration = BuildConfiguration();
 
             builder.Services
-                .AddSingleton(_configuration)
+                .AddConfiguration(_configuration)
                 .AddAutoMapper()
                 .AddTweetOperations(_configuration)
                 .AddCosmosDb(_configuration)

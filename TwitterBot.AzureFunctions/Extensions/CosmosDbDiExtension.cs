@@ -5,7 +5,7 @@ using TwitterBot.AzureFunctions.Common;
 using TwitterBot.Framework.Contracts.Data;
 using TwitterBot.Framework.CosmosDB;
 
-namespace TwitterBot.AzureFunctions.Configurations
+namespace TwitterBot.AzureFunctions.Extensions
 {
     public static class CosmosDbDiExtension
     {
